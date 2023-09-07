@@ -1,0 +1,46 @@
+
+.VPC & bastion host configuration
+[width="100%",cols="16%,11%,73%",options="header",]
+|===
+|Parameter label (name) |Default value|Description|Availability zones
+(`AvailabilityZones`)|`**__Requires input__**`|Availability Zones to use for the subnets in the VPC. Two Availability Zones are used for this deployment.|Allowed bastion host external access CIDR
+(`RemoteAccessCIDR`)|`**__Requires input__**`|The CIDR IP range that is permitted to access the SIOS Protection Suite server through the bastion host. We recommend that you set this value to a trusted IP range.|Key pair name
+(`KeyPairName`)|`**__Requires input__**`|Public/private key pair, which allows you to connect securely to your instance after it launches. When you created an AWS account, this is the key pair you created in your preferred Region.|Bastion host AMI operating system
+(`BastionAMIOS`)|`Amazon-Linux2-HVM`|The Linux distribution for the AMI to be used for the bastion host instances.|Bastion host instance type
+(`BastionInstanceType`)|`t2.micro`|Amazon EC2 instance type for the bastion instances.|Number of bastion hosts.
+(`NumBastionHosts`)|`1`|Enter the number of bastion hosts to create.|Global CIDR block for entire VPC
+(`VPCCIDR`)|`10.0.0.0/16`|Global CIDR IP range for entire VPC.|CIDR block for private subnet 1A
+(`PrivateSubnet1CIDR`)|`10.0.0.0/19`|CIDR IP range for the private subnet, located in Availability Zone 1.|CIDR block for private subnet 2A
+(`PrivateSubnet2CIDR`)|`10.0.32.0/19`|CIDR IP range for the private subnet, located in Availability Zone 2.|CIDR block for public subnet 1
+(`PublicSubnet1CIDR`)|`10.0.128.0/20`|CIDR IP range for the public subnet, located in Availability Zone 1.|CIDR block for public subnet 2
+(`PublicSubnet2CIDR`)|`10.0.144.0/20`|CIDR IP range for the public subnet, located in Availability Zone 2.
+|===
+.SIOS Protection Suite instance configuration
+[width="100%",cols="16%,11%,73%",options="header",]
+|===
+|Parameter label (name) |Default value|Description|SIOS Protection Suite instance name
+(`SPSLInstanceNamePrefix`)|`SPSL`|Name prefix for the SIOS Protection Suite servers.|SIOS Protection Suite instance type
+(`SPSLInstanceType`)|`t2.medium`|Amazon EC2 instance type for the SIOS Protection Suite servers.|Home directory volume type
+(`HomeVolumeType`)|`General Purpose (SSD)`|Volume type for the home directory.|Home directory size
+(`HomeSize`)|`100`|Storage size for the home directory, in GiB. Allowed range is 100–16384.|Home directory IOPS
+(`HomeIops`)|`1000`|IOPS for the home directory. This value is used only when the Home volume type parameter is set to `Provisioned IOPS`. Allowed range is 100–20000. The ratio of IOPS to volume size must be 50 or less. For example, if you set this parameter to 5000 IOPS, the home directory size must be at least 100 GiB.|Delete home on termination
+(`HomeDeleteOnTermination`)|`true`|Delete home directory volume when the SIOS Protection Suite server instance is terminated. Keep the default setting of `true` to delete the home directory when the instance is terminated. If `true`, you must back up your data before terminating your instance. Choose `false` to keep the home directory volume upon termination.|Mirror directory volume type
+(`MirrorVolumeType`)|`General Purpose (SSD)`|Volume type for the replicated data directory.|Mirror directory size
+(`MirrorSize`)|`100`|Storage size for the replicated volume, in GiB. Allowed range is 100–16384.|Mirror directory IOPS
+(`MirrorIops`)|`1000`|IOPS for the mirror volume. This value is used only when the Mirror volume type parameter is set to Provisioned IOPS. Allowed range is 100–20000. The ratio of IOPS to volume size must be 50 or less. For example, if you set this parameter to 5000 IOPS, the home directory size must be at least 100 GiB.|Delete mirror on termination
+(`MirrorDeleteOnTermination`)|`true`|Delete the replicated volume when the SIOS Protection Suite server instance is terminated. Keep the default setting of `true` to delete the home directory when the instance is terminated. If `true`, you must back up your data before terminating your instance. Choose `false` to keep the replicated volume upon termination.|New root password
+(`NewRootPassword`)|`**__Requires input__**`|Password for predefined admin user used to administer SIOS Protection Suite (8–16 characters).|License model for SIOS AMI
+(`SIOSAMIType`)|`PAYG`|SIOS Protection Suite AMI license model to use for cluster nodes.|SIOS Protection Suite license URL
+(`SIOSLicenseKeyFtpURL`)|`**__Requires input__**`|URL used to obtain license key for SIOS Protection Suite for Linux software.|Node 1 private IP address
+(`Node1PrivateIP`)|`10.0.0.100`|Primary private IP for the cluster node located in Availability Zone 1.|Node 2 private IP address
+(`Node2PrivateIP`)|`10.0.32.100`|Primary private IP for the cluster node located in Availability Zone 2.|Optional Windows jump server instance type
+(`WindowsJumpboxInstanceType`)|`None`|Amazon EC2 instance type for an optional Windows jump box.
+|===
+.AWS Quick Start configuration
+[width="100%",cols="16%,11%,73%",options="header",]
+|===
+|Parameter label (name) |Default value|Description|Quick Start S3 bucket name
+(`QSS3BucketName`)|`aws-quickstart`|Name of the S3 bucket for your copy of the Quick Start assets. Keep the default name unless you are customizing the template. Changing the name updates code references to point to a new Quick Start location. This name can include numbers, lowercase letters, uppercase letters, and hyphens, but do not start or end with a hyphen (-). See https://aws-quickstart.github.io/option1.html.|Quick Start S3 bucket Region
+(`QSS3BucketRegion`)|`us-east-1`|AWS Region where the Quick Start S3 bucket (QSS3BucketName) is hosted. Keep the default Region unless you are customizing the template. Changing this Region updates code references to point to a new Quick Start location. When using your own bucket, specify the Region. See https://aws-quickstart.github.io/option1.html.|Quick Start S3 key prefix
+(`QSS3KeyPrefix`)|`quickstart-sios-protection-suite/`|S3 key prefix that is used to simulate a directory for your copy of the Quick Start assets. Keep the default prefix unless you are customizing the template. Changing this prefix updates code references to point to a new Quick Start location. This prefix can include numbers, lowercase letters, uppercase letters, hyphens (-), and forward slashes (/). End with a forward slash. See https://docs.aws.amazon.com/AmazonS3/latest/dev/UsingMetadata.html and https://aws-quickstart.github.io/option1.html.
+|===
