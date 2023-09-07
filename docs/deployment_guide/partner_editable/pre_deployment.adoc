@@ -1,3 +1,21 @@
 //Include any predeployment steps here, such as signing up for a Marketplace AMI or making any changes to a partner account. If there are no predeployment steps, leave this file empty.
 
 == Predeployment steps
+
+=== Subscribe to the SIOS LifeKeeper for Linux AMI
+
+This Quick Start uses Amazon Machine Images (AMIs) from the http://aws.amazon.com/marketplace/[AWS Marketplace^]. Before you launch the Quick Start, you must subscribe to one of the SIOS LifeKeeper for Linux AMIs.
+
+Two licensing options are available: Bring Your Own License (BYOL), and pay as you go (PAYG).
+
+**BYOL option**
+
+. If you’re planning to use the BYOL licensing option, obtain a permanent license by https://us.sios.com/about/contact-us/[contacting SIOS directly^]. You can also sign up for a https://us.sios.com/free-trial/[free, 14-day, trial license^].
+. Log in to the AWS Marketplace at https://aws.amazon.com/marketplace.
+. Open the page for either https://aws.amazon.com/marketplace/pp/prodview-2xnmiqhsf4b5o[SIOS LifeKeeper for Linux on RHEL – BYOL^] or https://aws.amazon.com/marketplace/pp/prodview-msuiltu5sd4kk[SIOS LifeKeeper for Linux on RHEL – PAYG^]. Choose *Continue*.
+. Choose *Manual Launch*, and then choose *Accept Software Terms*. For more information about AWS Marketplace, see https://aws.amazon.com/marketplace/help/200799470[Getting started^].
+
+**PAYG option**
+
+To use a PAYG basic license, choose `PAYG` for the `SIOS AMI license type` parameter during deployment.
+
