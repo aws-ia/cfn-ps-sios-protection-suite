@@ -1,5 +1,5 @@
 project:
-  name: quickstart-sios-protection-suite
+  name: cfn-ps-sios-protection-suite
   owner: quickstart-eng@amazon.com
   package_lambda: false
   regions:
@@ -39,7 +39,7 @@ tests:
       PublicSubnet2CIDR: 10.0.144.0/20
       QSS3BucketName: $[taskcat_autobucket]
       QSS3BucketRegion: $[taskcat_current_region]
-      QSS3KeyPrefix: quickstart-sios-protection-suite/
+      QSS3KeyPrefix: cfn-ps-sios-protection-suite/
       RemoteAccessCIDR: 0.0.0.0/0
       SIOSAMIType: PAYG
       SIOSLicenseKeyFtpURL: override
