@@ -278,8 +278,8 @@ Parameters:
     Type: String
     Default: 'true'
     AllowedValues:
-      - true
-      - false
+      - 'true'
+      - 'false'
     ConstraintDescription: Must be 'true' or 'false'.
   HomeIops:
     Description: IOPS for the home directory. This value is used only when the Home volume type parameter is set to Provisioned IOPS. Allowed range is 100-20,000. The ratio of IOPS to volume size must be
@@ -310,8 +310,8 @@ Parameters:
     Type: String
     Default: 'true'
     AllowedValues:
-      - true
-      - false
+      - 'true'
+      - 'false'
     ConstraintDescription: Must be 'true' or 'false'.
   MirrorIops:
     Description: IOPS for the mirror volume. This value is used only when the Mirror volume type parameter is set to Provisioned IOPS. Allowed range is 100 - 20,000. The ratio of IOPS to volume size must
