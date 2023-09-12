@@ -574,3 +574,4 @@ Resources:
           Ref: QSS3BucketRegion
         QSS3KeyPrefix:
           Ref: QSS3KeyPrefix
+Outputs: {}
