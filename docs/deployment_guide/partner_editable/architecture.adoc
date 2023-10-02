@@ -7,22 +7,29 @@ AWS Cloud.
 
 [#architecture1]
 .Partner Solution architecture for {partner-product-short-name} on AWS
-image::../docs/deployment_guide/images/architecture_diagram.png[Architecture]
+image::../docs/deployment_guide/images/sios-protection-suite-architecture-diagram.png[Architecture]
 
 As shown in <<architecture1>>, this Partner Solution sets up the following:
 
 * A highly available architecture that spans two Availability Zones.*
-* A virtual private cloud (VPC) configured with public and private subnets, according to AWS
-best practices, to provide you with your own virtual network on AWS.*
+* A VPC configured with public and private subnets, according to AWS best practices, to provide you with your own virtual network on AWS.*
 * In the public subnets:
-** Managed network address translation (NAT) gateways to allow outbound
-internet access for resources in the private subnets.*
-** A Linux bastion host in an Auto Scaling group to allow inbound Secure
-Shell (SSH) access to Amazon Elastic Compute Cloud (Amazon EC2) instances in public and private subnets.*
-* In the private subnets:
-** <item>.
-** <item>.
-// Add bullet points for any additional components that are included in the deployment. Ensure that the additional components are shown in the architecture diagram. End each bullet with a period.
-* <describe any additional components>.
+** Managed network address translation (NAT) gateways to allow outbound internet access for resources in the private subnets.*
+** Linux bastion hosts in an Amazon Elastic Compute Cloud (Amazon EC2) Auto Scaling group to allow inbound SSH (Secure Shell) access to Amazon EC2 instances in public and private subnets.*
+* In the private subnets, two cluster nodes featuring SIOS LifeKeeper for Linux.
+* Amazon CloudWatch log groups to monitor, store, and access log files from EC2 instances.
+* AWS Systems Manager runbook to automate the deployment.
 
 [.small]#* The template that deploys this Partner Solution into an existing VPC skips the components marked by asterisks and prompts you for your existing VPC configuration.#
+
+|===
+|Component |Details
+
+// Space needed to maintain table headers
+|VPC |Single AWS Region with two Availability Zones.
+|Instance type |Minimum recommended instance type: t2.medium.
+|Operating system |See the https://docs.us.sios.com/Linux/current/LK4L/support-matrix[SIOS LifeKeeper for Linux Support Matrix].
+|Elastic IP |One Elastic IP address connected to each bastion host instance.
+|Instances |Two instances: two SIOS LifeKeeper for Linux cluster nodes.
+|Volumes |Two volumes (gp2 or io3) per cluster node: one home volume (/) and one additional volume for replicated data storage.
+|===

@@ -1,0 +1,114 @@
+[
+    {
+        "ParameterKey": "RemoteAccessCIDR",
+        "ParameterValue": "0.0.0.0/0"
+    },
+    {
+        "ParameterKey": "AvailabilityZones",
+        "ParameterValue": "$[alfred_getaz_2]"
+    },
+    {
+        "ParameterKey": "BastionAMIOS",
+        "ParameterValue": "Amazon-Linux-HVM"
+    },
+    {
+        "ParameterKey": "BastionInstanceType",
+        "ParameterValue": "t2.micro"
+    },
+    {
+        "ParameterKey": "VPCCIDR",
+        "ParameterValue": "10.0.0.0/16"
+    },
+    {
+        "ParameterKey": "PrivateSubnet1CIDR",
+        "ParameterValue": "10.0.0.0/19"
+    },
+    {
+        "ParameterKey": "PrivateSubnet2CIDR",
+        "ParameterValue": "10.0.32.0/19"
+    },
+    {
+        "ParameterKey": "PublicSubnet1CIDR",
+        "ParameterValue": "10.0.128.0/20"
+    },
+    {
+        "ParameterKey": "PublicSubnet2CIDR",
+        "ParameterValue": "10.0.144.0/20"
+    },
+    {
+        "ParameterKey": "SPSLInstanceNamePrefix",
+        "ParameterValue": "SPSL"
+    },
+    {
+        "ParameterKey": "SPSLInstanceType",
+        "ParameterValue": "t2.medium"
+    },
+    {
+        "ParameterKey": "Node1PrivateIP",
+        "ParameterValue": "10.0.0.100"
+    },
+    {
+        "ParameterKey": "Node2PrivateIP",
+        "ParameterValue": "10.0.32.100"
+    },
+    {
+        "ParameterKey": "HomeVolumeType",
+        "ParameterValue": "General Purpose (SSD)"
+    },
+    {
+        "ParameterKey": "HomeIops",
+        "ParameterValue": "1000"
+    },
+    {
+        "ParameterKey": "HomeSize",
+        "ParameterValue": "100"
+    },
+    {
+        "ParameterKey": "HomeDeleteOnTermination",
+        "ParameterValue": "true"
+    },
+    {
+        "ParameterKey": "MirrorVolumeType",
+        "ParameterValue": "General Purpose (SSD)"
+    },
+    {
+        "ParameterKey": "MirrorIops",
+        "ParameterValue": "1000"
+    },
+    {
+        "ParameterKey": "MirrorSize",
+        "ParameterValue": "100"
+    },
+    {
+        "ParameterKey": "MirrorDeleteOnTermination",
+        "ParameterValue": "true"
+    },
+    {
+        "ParameterKey": "KeyPairName",
+        "ParameterValue": "$[alfred_getkeypair]"
+    },
+    {
+        "ParameterKey": "NewRootPassword",
+        "ParameterValue": "$[alfred_genpass_14]"
+    },
+    {
+        "ParameterKey": "SIOSAMIType",
+        "ParameterValue": "PAYG"
+    },
+    {
+        "ParameterKey": "SIOSLicenseKeyFtpURL",
+        "ParameterValue": "override"
+    },
+    {
+        "ParameterKey": "WindowsJumpboxInstanceType",
+        "ParameterValue": "None"
+    },
+    {
+        "ParameterKey":"QSS3BucketName",
+        "ParameterValue":"$[taskcat_autobucket]"
+    },
+    {
+        "ParameterKey":"QSS3KeyPrefix",
+        "ParameterValue":"quickstart-sios-protection-suite/"
+    }
+]

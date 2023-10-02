@@ -1,0 +1,6 @@
+
+=== Parameters for deploying into a new VPC
+include::sios-protection-suite-main.template.adoc[]
+
+=== Parameters for deploying into an existing VPC
+include::sios-protection-suite.template.adoc[]
