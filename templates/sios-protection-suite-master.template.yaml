@@ -3,6 +3,10 @@ Description: This master template creates a VPC infrastructure for a multi-AZ, m
   Suite for Linux solution. **WARNING** This template creates EC2 instances and related resources. You will be billed for the AWS resources used if you create a stack from this template. SIOS Protection
   Suite for Linux is licensed separately. Please contact SIOS at support@us.sios.com or visit https://us.sios.com/demo-request/ for demo licenses. (qs-1oqirsqja)
 Metadata:
+  cfn-lint:
+    config:
+      ignore_checks:
+        - E9101
   AWS::CloudFormation::Interface:
     ParameterGroups:
       - Label:
@@ -437,7 +441,6 @@ Resources:
         VPCCIDR:
           Ref: VPCCIDR
   BastionStack:
-    DependsOn: VPCStack
     Type: AWS::CloudFormation::Stack
     Properties:
       TemplateURL:
@@ -486,7 +489,6 @@ Resources:
             - VPCStack
             - Outputs.VPCID
   SPSStack:
-    DependsOn: BastionStack
     Type: AWS::CloudFormation::Stack
     Properties:
       TemplateURL:
