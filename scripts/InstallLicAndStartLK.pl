@@ -22,6 +22,7 @@ use vars qw($opt_u $opt_s $opt_r);
 my $DEFAULT_LIC_NAME = "/evalkeys.lic";
 my $ret;
 my $licenseURL;
+my $AMIType;
 
 #
 # Usage
@@ -39,6 +40,11 @@ sub usage {
 sub lookupLicenseParameter {
     $licenseURL = `/usr/local/bin/aws cloudformation describe-stacks --stack-name $opt_s --region $opt_r | /usr/local/bin/jq '.Stacks[0].Parameters[] | select(.ParameterKey=="SIOSLicenseKeyFtpURL") | .ParameterValue' | sed 's/"//g'`;
     chomp($licenseURL);
+}
+
+sub lookupAMITypeParameter {
+	$AMIType = `/usr/local/bin/aws cloudformation describe-stacks --stack-name $opt_s --region $opt_r | /usr/local/bin/jq '.Stacks[0].Parameters[0] | select(.ParameterKey="SIOSAMIType") | .ParameterValue' | sed 's/"//g'`;
+	chomp($AMIType);	
 }
 
 #
@@ -210,24 +216,35 @@ getopts('u:s:r:');
 if ($opt_u eq '') {
     if($opt_r eq '' || $opt_s eq '') {
         usage();
-        exit 1;
+	exit 1;
     }
     lookupLicenseParameter();
 } else {
     $licenseURL = $opt_u;
 }
 
+lookupAMITypeParameter();
 $ret = CheckLKStatus();
 if (!$ret) {
     # LifeKeeper is not running so assume we need to retrieve the license,
     # install it and then start LifeKeeper.
     my $licFile = GetLicenseFile();
+
+    my $installedLicenseFileRet=0;
     if (!defined $licFile) {
-        exit 1;
+	# No license file found, fail unless we can start LifeKeeper
+	$ret=1;
+	#exit 1;
+    }else{
+	$installedLicenseFileRet = InstallLicense($licFile);
     }
-    if (InstallLicense($licFile)) {
-        $ret = !(StartLifeKeeper());
+    if ( $AMIType eq "PAYG" ||  $installedLicenseFileRet ) {
+	    $ret = !(StartLifeKeeper());
     }
+}else{
+	# LifeKeeper is started
+	# Assume we have a license and continue with stack creation
+	$ret = 0;
 }
 
 exit $ret;
