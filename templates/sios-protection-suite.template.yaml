@@ -1080,7 +1080,7 @@ Resources:
             Parameters:
               sourceType: "S3"
               sourceInfo: '{"path": "https://{{QSS3BucketName}}.s3.{{QSS3BucketRegion}}.amazonaws.com/{{QSS3KeyPrefix}}scripts/CreateMirrorHierarchy.pl"}'
-              commandLine: "while ./CreateMirrorHierarchy.pl -l /dev/xvdca -r /dev/xvdca 2>&1 >> /var/log/cloud-init.log; do sleep 10;" 
+              commandLine: "while ./CreateMirrorHierarchy.pl -l /dev/xvdca -r /dev/xvdca 2>&1 >> /var/log/cloud-init.log; do sleep 10; done" 
         # If all steps complete successfully signals CFN of Success
         - name: "signalsuccess"
           action: "aws:executeAwsApi"
