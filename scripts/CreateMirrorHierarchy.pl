@@ -32,7 +32,6 @@ my $BUNDLEADDITION=""; # null for 1x1 mirror
 my $TARGETPRIORITY=10;
 
 my $ret;
-my $baseBundle;
 my $templateSys;
 my $targetSys;
 my $mountPoint;
@@ -86,7 +85,6 @@ sub CanextendCheck {
 #
 # Main body of script
 #
-print "starting\n";
 getopts('f:l:m:r:s:');
 if ($opt_l eq '' || $opt_r eq '') {
 	usage();
@@ -138,15 +136,11 @@ if (! -b $opt_l) {
 
 
 my $localPartition = "${opt_l}1";
-#if ( $localPartition eq "1" || ! -e $localPartition){
-`parted /dev/xvdca --script mklabel gpt mkpart xfspart xfs 0% 100%`;
+`parted ${opt_l} --script mklabel gpt mkpart xfspart xfs 0% 100%`;
 if ($? != 0) {
-	print "Failed to create partition for $opt_l on the template server.\n";
+	print "Failed to create partition for ${opt_l} on the template server.\n";
 	exit 1;
 }
-#}else{
-#print "partition for $opt_l already exists, as \"$localPartition\"\n"
-#}
 
 # Check that the specified devices exists on the target server
 @output = `$LKDIR/bin/lcdremexec -d $targetSys -- "if [ ! -b $opt_r ]; then echo no; else echo yes; fi"`;
@@ -158,15 +152,11 @@ if (($? != 0) || (grep(/^no/, @output))) {
 # create a default partition on the specified device on the target system
 
 my $targetPartition = "${opt_r}1";
-#if( `$LKBIN/lcdremexec -d $targetSys -- "if [ -e $targetPartition ]; then exit 0; else exit 1; fi;"` ){
 `$LKBIN/lcdremexec -d $targetSys -- "parted ${opt_r} --script mklabel gpt mkpart xfspart xfs 0% 100%"`;
 if ($? != 0) {
 	print "Failed to create partition for $opt_r on the template server.\n";
 	exit 1;
 }
-#}else{
-#	print "partition for $opt_r already exists on system $targetSys as \"$targetPartition\"\n"
-#}
 
 # Make sure the file system driver module is loaded on the template
 @output = `modprobe $fsType >/dev/null 2>&1`;
@@ -178,18 +168,19 @@ my $localPartition = "${opt_l}1";
 my $inslist_ret = system("$LKBIN/ins_list -R $mountPoint > /dev/null 2>&1");
 if($inslist_ret){
 	print "Resource instance for filesystem resource with tag \"$mountPoint\" does not exist, creating resource\n";
-	$ret = system "$LKBIN/lkcli resource create dk --tag $LKDRTAG --mode $syncType --device $localPartition --fstype $fsType --mount_point $mountPoint --fstag $mountPoint --hierarchy new";
-	
+	$ret = system "$LKBIN/lkcli resource create dk --tag $LKDRTAG --mode $syncType --device $localPartition --fstype $fsType --mount_point $mountPoint --fstag $mountPoint --hierarchy new";	
 }else{
 	print "Resource instance for filesystem resource with tag \"$mountPoint\" already exists\n";
 	$ret = 0;
 }
 
+# Determine if mirror creation succeeded
 if ($ret != 0) {
 	print "Failed to create the scsi netraid resource hierarchy\n";
 	exit 1;
 }
 
+# Update LCD Database
 system "$LKDIR/bin/lcdsync";
 
 # Make sure the file system driver module is loaded on the target system
@@ -198,14 +189,11 @@ foreach (@output) {
 	chomp ($_);
 	print "Modprobe output: $_\n";
 }
-# Setup the bundle for the extend manager
-$baseBundle = "\"$mountPoint\",\"$mountPoint\",\"$mountPoint\\\" \\\"$LKDRTAG\",,\"$syncType\",\"$targetPartition\",\"$targetPartition\",\"$LKDRTAG\",\"$BITMAP\",\"$mirrorPath\",\"$syncType\"$BUNDLEADDITION";
 
 my $laddr = (split('/', $mirrorPath))[0];
 my $raddr = (split('/', $mirrorPath))[1];
 
 my $eqvlist_ret = system("eqv_list -t $mountPoint > /dev/null 2>&1");
-
 if( $eqvlist_ret ){
 	print "Resource $mountPoint is not extended, extending now\n";
 	print "$LKBIN/lkcli resource extend dk --tag $LKDRTAG --dest $targetSys --mode $syncType --laddr $laddr -raddr $raddr --fstag $mountPoint --switchback $SWITCHBACK --target_priority $TARGETPRIORITY";

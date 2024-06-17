@@ -216,7 +216,7 @@ getopts('u:s:r:');
 if ($opt_u eq '') {
     if($opt_r eq '' || $opt_s eq '') {
         usage();
-	exit 1;
+        exit 1;
     }
     lookupLicenseParameter();
 } else {
@@ -224,6 +224,8 @@ if ($opt_u eq '') {
 }
 
 lookupAMITypeParameter();
+
+# Is LK Started (1 = no, 0 = yes)
 $ret = CheckLKStatus();
 if (!$ret) {
     # LifeKeeper is not running so assume we need to retrieve the license,
@@ -232,13 +234,12 @@ if (!$ret) {
 
     my $installedLicenseFileRet=0;
     if (!defined $licFile) {
-	# No license file found, fail unless we can start LifeKeeper
-	$ret=1;
-	#exit 1;
+        # No license file found, fail unless we can start LifeKeeper
+        $ret=1;
     }else{
-	$installedLicenseFileRet = InstallLicense($licFile);
+        $installedLicenseFileRet = InstallLicense($licFile);
     }
-    if ( $AMIType eq "PAYG" ||  $installedLicenseFileRet ) {
+    if ( $AMIType eq "PAYG" || $installedLicenseFileRet ) {
 	    $ret = !(StartLifeKeeper());
     }
 }else{

@@ -1050,7 +1050,7 @@ Resources:
             Parameters:
               sourceType: "S3"
               sourceInfo: '{"path": "https://{{QSS3BucketName}}.s3.{{QSS3BucketRegion}}.amazonaws.com/{{QSS3KeyPrefix}}scripts/CreateCommPath.pl"}'
-              commandLine: "sleep 60; ./CreateCommPath.pl -l {{Node1PrivateIP}} -r {{Node2PrivateIP}} -s {{SPSLNode2Hostname}} 2>&1 >> /var/log/cloud-init.log; echo \"createCommPathsSPSL01\" >> /var/log/cloud-init.log"
+              commandLine: "sleep 60; ./CreateCommPath.pl -l {{Node1PrivateIP}} -r {{Node2PrivateIP}} -s {{SPSLNode2Hostname}} 2>&1 >> /var/log/cloud-init.log;"
         - name: "createCommpathsSPSL02"
           action: "aws:runCommand"
           onFailure: "step:signalfailure"
@@ -1065,7 +1065,7 @@ Resources:
             Parameters:
               sourceType: "S3"
               sourceInfo: '{"path": "https://{{QSS3BucketName}}.s3.{{QSS3BucketRegion}}.amazonaws.com/{{QSS3KeyPrefix}}scripts/CreateCommPath.pl"}'
-              commandLine: "./CreateCommPath.pl -l {{Node2PrivateIP}} -r {{Node1PrivateIP}} -s {{SPSLNode1Hostname}} 2>&1 >> /var/log/cloud-init.log; echo \"createCommPathsSPSL02\" >> /var/log/cloud-init.log"
+              commandLine: "./CreateCommPath.pl -l {{Node2PrivateIP}} -r {{Node1PrivateIP}} -s {{SPSLNode1Hostname}} 2>&1 >> /var/log/cloud-init.log;"
         - name: "CreateMirrors"
           action: "aws:runCommand"
           onFailure: "step:signalfailure"
@@ -1080,7 +1080,7 @@ Resources:
             Parameters:
               sourceType: "S3"
               sourceInfo: '{"path": "https://{{QSS3BucketName}}.s3.{{QSS3BucketRegion}}.amazonaws.com/{{QSS3KeyPrefix}}scripts/CreateMirrorHierarchy.pl"}'
-              commandLine: "while ./CreateMirrorHierarchy.pl -l /dev/xvdca -r /dev/xvdca 2>&1 >> /var/log/cloud-init.log; do sleep 10; echo \"CreateMirrorHierarchy\" >> /var/log/cloud-init.log; done"
+              commandLine: "while ./CreateMirrorHierarchy.pl -l /dev/xvdca -r /dev/xvdca 2>&1 >> /var/log/cloud-init.log; do sleep 10;" 
         # If all steps complete successfully signals CFN of Success
         - name: "signalsuccess"
           action: "aws:executeAwsApi"
