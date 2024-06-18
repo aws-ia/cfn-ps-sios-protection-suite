@@ -132,15 +132,74 @@ if (! -b $opt_l) {
 	exit 1;
 }
 
-# create a default partition on the specified device on the template system
+# Name the volume group
+my $VGName="Sample_VGroup";
 
+# Name the logical volume 
+my $LVName="Sample LVolume";
 
-my $localPartition = "${opt_l}1";
-`parted ${opt_l} --script mklabel gpt mkpart xfspart xfs 0% 100%`;
-if ($? != 0) {
-	print "Failed to create partition for ${opt_l} on the template server.\n";
+my $vgret = 0;
+
+#Check if the volume group is created locally
+if( system("vgdisplay '$VGName' > /dev/null") ){
+	print "Volume group $VGName does not exist, creating now.\n";
+	
+	# Create the volume group
+	$vgret = system("vgcreate -f $VGName ${opt_l}");
+}else{
+	print "Volume group $VGName already exists, skipping create of the volume group.\n";
+}
+
+if ($vgret != 0) {
+	print "Failed to create Volume Group $VGName for ${opt_l} on the template server.\n";
 	exit 1;
 }
+
+my $lvret = 0;
+# Check if the logical volume is created locally 
+if( system("lvdisplay '$VGName'/'$LVName' 2>/dev/null") ){
+	print "Logical volume $LVName does not exist, creating now.\n";
+	
+	# Create the logical volume
+	$lvret = system("lvcreate -y --name $LVName -l 100%FREE $VGName");
+}else{
+	print "Logical volume $LVName exists, skipping create of the logical volume.\n";
+}
+
+if ($lvret != 0){
+	print "Failed to create the Logical Volume for $LVName with $VGName on ${opt_l} on the template server.\n";
+	exit 1;
+}
+
+@output = `modprobe $fsType >/dev/null 2>&1`
+
+# Build the name for the device to mirror
+my $device = "/dev/mapper/$VGName-$LVName";
+
+if ( ! -e $device ){
+        print "The device $device does not exist on local system, cannot proceed with mirror creation.\n"
+        exit 1;
+}
+
+#if we have resource instances for the mirror, skip trying to create the mirror
+my $inslist_ret = system("$LKBIN/ins_list -R $mountPoint > /dev/null 2>&1");
+if($inslist_ret){
+        print "Resource instance for filesystem resource with tag \"$mountPoint\" does not exist, creating resource\n";
+        $ret = system "$LKBIN/lkcli resource create dk --tag $LKDRTAG --mode $syncType --device $device --fstype $fsType --mount_point $mountPoint --fstag $mountPoint --hierarchy new";
+}else{
+        print "Resource instance for filesystem resource with tag \"$mountPoint\" already exists\n";
+        $ret = 0;
+}
+
+# Determine if mirror creation succeeded
+if ($ret != 0) {
+        print "Failed to create the scsi netraid resource hierarchy\n";
+        exit 1;
+}
+
+# Update LCD Database
+system "$LKBIN/lcdsync";
+
 
 # Check that the specified devices exists on the target server
 @output = `$LKDIR/bin/lcdremexec -d $targetSys -- "if [ ! -b $opt_r ]; then echo no; else echo yes; fi"`;
@@ -149,42 +208,44 @@ if (($? != 0) || (grep(/^no/, @output))) {
 	exit 1;
 }
 
-# create a default partition on the specified device on the target system
+# command prefix for running commands remotely
+my $remexec = "$LKBIN/lcdremexec -d $tartgetSys --";
 
-my $targetPartition = "${opt_r}1";
-`$LKBIN/lcdremexec -d $targetSys -- "parted ${opt_r} --script mklabel gpt mkpart xfspart xfs 0% 100%"`;
-if ($? != 0) {
-	print "Failed to create partition for $opt_r on the template server.\n";
-	exit 1;
-}
+# Check if the volume group is created on remote system
 
-# Make sure the file system driver module is loaded on the template
-@output = `modprobe $fsType >/dev/null 2>&1`;
-
-
-my $localPartition = "${opt_l}1";
-
-#if we have resource instances for the mirror, skip trying to create the mirror
-my $inslist_ret = system("$LKBIN/ins_list -R $mountPoint > /dev/null 2>&1");
-if($inslist_ret){
-	print "Resource instance for filesystem resource with tag \"$mountPoint\" does not exist, creating resource\n";
-	$ret = system "$LKBIN/lkcli resource create dk --tag $LKDRTAG --mode $syncType --device $localPartition --fstype $fsType --mount_point $mountPoint --fstag $mountPoint --hierarchy new";	
+$vgret = 0;
+if ( system("$remexec \"vgdisplay '$VGName' > /dev/null \"") ){
+	print "Volume group $VGName does not exist on $targetSys, creating now.\n";
+	
+	# Create volume group remotely
+	$vgret = system("$remexec \"vgcreate -f $VGName ${opt_r}\"");
 }else{
-	print "Resource instance for filesystem resource with tag \"$mountPoint\" already exists\n";
-	$ret = 0;
+	print "Volume group $VGname already exists on $targetSys, skipping create of the volume group.\n";
 }
 
-# Determine if mirror creation succeeded
-if ($ret != 0) {
-	print "Failed to create the scsi netraid resource hierarchy\n";
+if ($vgret != 0) {
+	print "Failed to create partition for $opt_r on the target  server.\n";
 	exit 1;
 }
 
-# Update LCD Database
-system "$LKDIR/bin/lcdsync";
+# Check if the logical volume is created on remote system
+
+$lvret = 0;
+if( system("$remexec \"lvdisplay '$VGName'/'$LVName' 2> /dev/null \"") ){
+	print "Logical volume $LVName does not exsist on $targetSys, creating now.\n";
+	
+	# Create logical volume remotely
+	$lvret = system("$remexec \"lvcreate -y --name $LVName -l 100%FREE $VGName\"");
+}else{
+	print "Logical volume $LVName exists, skipping create of the logical volume.\n";
+}
+
+if ($lvret != 0){
+	print "Failed to create the Logical Volume for $LVName with $VGName on ${opt_r} on the target system $targetSys.\n";
+}
 
 # Make sure the file system driver module is loaded on the target system
-@output = `$LKDIR/bin/lcdremexec -d $targetSys -- "modprobe $fsType "`;
+@output = `$remexec "modprobe $fsType"`;
 foreach (@output) {
 	chomp ($_);
 	print "Modprobe output: $_\n";
@@ -196,7 +257,6 @@ my $raddr = (split('/', $mirrorPath))[1];
 my $eqvlist_ret = system("eqv_list -t $mountPoint > /dev/null 2>&1");
 if( $eqvlist_ret ){
 	print "Resource $mountPoint is not extended, extending now\n";
-	print "$LKBIN/lkcli resource extend dk --tag $LKDRTAG --dest $targetSys --mode $syncType --laddr $laddr -raddr $raddr --fstag $mountPoint --switchback $SWITCHBACK --target_priority $TARGETPRIORITY";
 	$ret = system "$LKBIN/lkcli resource extend dk --tag $LKDRTAG --dest $targetSys --mode $syncType --laddr $laddr -raddr $raddr --fstag $mountPoint --switchback $SWITCHBACK --target_priority $TARGETPRIORITY";
 }else{
 	print "Resource $mountPoint is already extended, skipping extend on already extended resource\n";
