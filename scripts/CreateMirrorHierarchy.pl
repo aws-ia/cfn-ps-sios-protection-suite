@@ -136,16 +136,16 @@ if (! -b $opt_l) {
 my $VGName="Sample_VGroup";
 
 # Name the logical volume 
-my $LVName="Sample LVolume";
+my $LVName="Sample_LVolume";
 
 my $vgret = 0;
 
 #Check if the volume group is created locally
-if( system("vgdisplay '$VGName' > /dev/null") ){
+if( system("vgdisplay '$VGName' > /dev/null 2>&1") ){
 	print "Volume group $VGName does not exist, creating now.\n";
 	
 	# Create the volume group
-	$vgret = system("vgcreate -f $VGName ${opt_l}");
+	$vgret = system("vgcreate -f $VGName ${opt_l} 2>/dev/null");
 }else{
 	print "Volume group $VGName already exists, skipping create of the volume group.\n";
 }
@@ -157,11 +157,11 @@ if ($vgret != 0) {
 
 my $lvret = 0;
 # Check if the logical volume is created locally 
-if( system("lvdisplay '$VGName'/'$LVName' 2>/dev/null") ){
+if( system("lvdisplay '$VGName'/'$LVName' > /dev/null 2>&1") ){
 	print "Logical volume $LVName does not exist, creating now.\n";
 	
 	# Create the logical volume
-	$lvret = system("lvcreate -y --name $LVName -l 100%FREE $VGName");
+	$lvret = system("lvcreate -y --name $LVName -l 100%FREE $VGName 2>/dev/null");
 }else{
 	print "Logical volume $LVName exists, skipping create of the logical volume.\n";
 }
@@ -171,13 +171,13 @@ if ($lvret != 0){
 	exit 1;
 }
 
-@output = `modprobe $fsType >/dev/null 2>&1`
+@output = `modprobe $fsType >/dev/null 2>&1`;
 
 # Build the name for the device to mirror
 my $device = "/dev/mapper/$VGName-$LVName";
 
 if ( ! -e $device ){
-        print "The device $device does not exist on local system, cannot proceed with mirror creation.\n"
+        print "The device $device does not exist on local system, cannot proceed with mirror creation.\n";
         exit 1;
 }
 
@@ -209,18 +209,18 @@ if (($? != 0) || (grep(/^no/, @output))) {
 }
 
 # command prefix for running commands remotely
-my $remexec = "$LKBIN/lcdremexec -d $tartgetSys --";
+my $remexec = "$LKBIN/lcdremexec -d $targetSys --";
 
 # Check if the volume group is created on remote system
 
 $vgret = 0;
-if ( system("$remexec \"vgdisplay '$VGName' > /dev/null \"") ){
+if ( system("$remexec \"vgdisplay '$VGName' > /dev/null 2>&1 \"") ){
 	print "Volume group $VGName does not exist on $targetSys, creating now.\n";
 	
 	# Create volume group remotely
-	$vgret = system("$remexec \"vgcreate -f $VGName ${opt_r}\"");
+	$vgret = system("$remexec \"vgcreate -f $VGName ${opt_r} 2>/dev/null\"");
 }else{
-	print "Volume group $VGname already exists on $targetSys, skipping create of the volume group.\n";
+	print "Volume group $VGName already exists on $targetSys, skipping create of the volume group.\n";
 }
 
 if ($vgret != 0) {
@@ -231,11 +231,11 @@ if ($vgret != 0) {
 # Check if the logical volume is created on remote system
 
 $lvret = 0;
-if( system("$remexec \"lvdisplay '$VGName'/'$LVName' 2> /dev/null \"") ){
+if( system("$remexec \"lvdisplay '$VGName'/'$LVName' > /dev/null 2>&1 \"") ){
 	print "Logical volume $LVName does not exsist on $targetSys, creating now.\n";
 	
 	# Create logical volume remotely
-	$lvret = system("$remexec \"lvcreate -y --name $LVName -l 100%FREE $VGName\"");
+	$lvret = system("$remexec \"lvcreate -y --name $LVName -l 100%FREE $VGName 2>/dev/null\"");
 }else{
 	print "Logical volume $LVName exists, skipping create of the logical volume.\n";
 }
