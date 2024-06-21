@@ -193,7 +193,7 @@ if($inslist_ret){
 
 # Determine if mirror creation succeeded
 if ($ret != 0) {
-        print "Failed to create the scsi netraid resource hierarchy\n";
+        print "Failed to create the DataKeeper resource hierarchy\n";
         exit 1;
 }
 
