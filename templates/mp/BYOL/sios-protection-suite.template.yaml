@@ -392,50 +392,50 @@ Rules:
 Mappings:
   AWSAMIRegionMap:
     ap-northeast-2:
-      SPSLRHEL: ami-0d016e528c71c0ee0
-      SPSLRHELBYOL: ami-0b9201d63255cb5cf
+      SPSLRHEL: ami-0702f9831a8afc6b6
+      SPSLRHELBYOL: ami-0ffae71f35046f924
     ap-south-1:
-      SPSLRHEL: ami-013d40db52efcd272
-      SPSLRHELBYOL: ami-07056e985655d39dc
+      SPSLRHEL: ami-085441ad7b3bfa29e
+      SPSLRHELBYOL: ami-04836e1d837406afd
     ap-southeast-1:
-      SPSLRHEL: ami-06bc9190c4d1a9c1f
-      SPSLRHELBYOL: ami-062396fefaffee5b8
+      SPSLRHEL: ami-02d67eda42967b2c6
+      SPSLRHELBYOL: ami-0652c3f21cffb1d12
     ap-southeast-2:
-      SPSLRHEL: ami-05e5acc8eb5d52b0f
-      SPSLRHELBYOL: ami-0fd2d06e9757a2003
+      SPSLRHEL: ami-0a0415561fddd877d
+      SPSLRHELBYOL: ami-0a3bfc8c2cfb41e76
     ca-central-1:
-      SPSLRHEL: ami-0d5c54f2e718af8be
-      SPSLRHELBYOL: ami-095644403b5fd5581
+      SPSLRHEL: ami-0c33e2c0e7eba971c
+      SPSLRHELBYOL: ami-004882e4c793779aa
     eu-central-1:
-      SPSLRHEL: ami-09491fdbec81caccf
-      SPSLRHELBYOL: ami-0944551716698acfd
+      SPSLRHEL: ami-0c2dfa2598531a1e2
+      SPSLRHELBYOL: ami-09230c5b285627aca
     eu-north-1:
-      SPSLRHEL: ami-037ef075742bf4343
-      SPSLRHELBYOL: ami-0bb0dbf26654d51cb
+      SPSLRHEL: ami-054bfc21d64b467fc
+      SPSLRHELBYOL: ami-02b256aa6261c90df
     eu-west-1:
-      SPSLRHEL: ami-03d1efaef90eb309b
-      SPSLRHELBYOL: ami-0dad48da97e9ab37d
+      SPSLRHEL: ami-08193987e940507f3
+      SPSLRHELBYOL: ami-0d84193ac1e2070f1
     eu-west-2:
-      SPSLRHEL: ami-02ae9d981572da5cd
-      SPSLRHELBYOL: ami-03e661bb8b3105cb2
+      SPSLRHEL: ami-0e175456fa6bcb7ee
+      SPSLRHELBYOL: ami-095b07555e5f6fcaf
     eu-west-3:
-      SPSLRHEL: ami-0212a22bd7f649252
-      SPSLRHELBYOL: ami-0e089a53a16e9a879
+      SPSLRHEL: ami-0c59411bf087a77bc
+      SPSLRHELBYOL: ami-0ec5a3cc726b24e18
     sa-east-1:
-      SPSLRHEL: ami-0cb2883a76e7eff6c
-      SPSLRHELBYOL: ami-048e86bddb10570de
+      SPSLRHEL: ami-0b5e8f29776704600
+      SPSLRHELBYOL: ami-0169c29a58abbeafa
     us-east-1:
-      SPSLRHEL: ami-0bf453a3f805ec754
-      SPSLRHELBYOL: ami-0b37b748aa7d04908
+      SPSLRHEL: ami-09c5de5e043a82f07
+      SPSLRHELBYOL: ami-095908dd92a3380f1
     us-east-2:
-      SPSLRHEL: ami-06c4b7a0f2e81c3fa
-      SPSLRHELBYOL: ami-0bf20e0cbbc631ff9
+      SPSLRHEL: ami-0649e61b126948c04
+      SPSLRHELBYOL: ami-08ddb3ea0e5859783
     us-west-1:
-      SPSLRHEL: ami-0ed9bd0964a60fae2
-      SPSLRHELBYOL: ami-05ae01a676795e523
+      SPSLRHEL: ami-0f4c7897602b897bd
+      SPSLRHELBYOL: ami-079a49135fabb9bbf
     us-west-2:
-      SPSLRHEL: ami-03540f855708b82d6
-      SPSLRHELBYOL: ami-049f44917adb3a215
+      SPSLRHEL: ami-041ceaa2e55a5deee
+      SPSLRHELBYOL: ami-03426fd08592fe41d
 Conditions:
   UsingDefaultBucket: !Equals [!Ref QSS3BucketName, 'aws-ia']
   HomeProvisionedIopsCondition: !Equals [!Ref HomeVolumeType, "Provisioned IOPS"]
