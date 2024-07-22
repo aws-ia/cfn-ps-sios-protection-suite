@@ -1,0 +1,1072 @@
+---
+AWSTemplateFormatVersion: 2010-09-09
+Description: This template creates a deployment of SIOS Protection Suite for Linux
+  on AWS EC2, within an existing VPC and Bastion server environment. **WARNING** This
+  template creates EC2 instances and related resources. You will be billed for the
+  AWS resources used if you create a stack from this template. SIOS Protection Suite
+  for Linux is licensed separately. Please contact SIOS at support@us.sios.com or
+  visit https://us.sios.com/demo-request/ for demo licenses. (qs-1oqhlks0l)
+Metadata:
+  QuickStartDocumentation:
+    EntrypointName: Parameters for deploying into an existing VPC
+    Order: "2"
+  cfn-lint:
+    config:
+      ignore_checks:
+        - E9101
+        - W9006
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+    - Label:
+        default: Network configuration
+      Parameters:
+      - VPCID
+      - PrivateSubnet1ID
+      - PrivateSubnet1CIDR
+      - PrivateSubnet2ID
+      - PrivateSubnet2CIDR
+      - PublicSubnet1ID
+    - Label:
+        default: Bastion host configuration
+      Parameters:
+      - KeyPairName
+      - RemoteAccessSecurityGroupID
+      - RemoteAccessCIDR
+    - Label:
+        default: SIOS Protection Suite instance configuration
+      Parameters:
+      - SPSLInstanceNamePrefix
+      - SPSLInstanceType
+      - HomeVolumeType
+      - HomeSize
+      - HomeIops
+      - HomeDeleteOnTermination
+      - MirrorVolumeType
+      - MirrorSize
+      - MirrorIops
+      - MirrorDeleteOnTermination
+      - NewRootPassword
+      - Node1PrivateIP
+      - Node2PrivateIP
+      - WindowsJumpboxInstanceType
+      - LatestWindowsAmiId
+    - Label:
+        default: AWS Quick Start configuration
+      Parameters:
+      - QSS3BucketName
+      - QSS3BucketRegion
+      - QSS3KeyPrefix
+    ParameterLabels:
+      RemoteAccessSecurityGroupID:
+        default: Bastion host security group ID
+      RemoteAccessCIDR:
+        default: Allowed bastion host external access CIDR
+      SPSLInstanceNamePrefix:
+        default: SIOS Protection Suite instance name prefix
+      SPSLInstanceType:
+        default: SIOS Protection Suite instance type
+      HomeDeleteOnTermination:
+        default: Delete home on termination
+      HomeIops:
+        default: Home directory IOPS
+      HomeVolumeType:
+        default: Home directory volume type
+      HomeSize:
+        default: Home directory size
+      MirrorDeleteOnTermination:
+        default: Delete mirror on termination
+      MirrorIops:
+        default: Mirror directory IOPS
+      MirrorVolumeType:
+        default: Mirror directory volume type
+      MirrorSize:
+        default: Mirror directory size
+      KeyPairName:
+        default: Key pair name
+      NewRootPassword:
+        default: New root password
+      VPCID:
+        default: VPC ID
+      PrivateSubnet1ID:
+        default: Private subnet 1 ID
+      PrivateSubnet1CIDR:
+        default: CIDR block for private subnet 1A
+      Node1PrivateIP:
+        default: Node 1 private IP address
+      PrivateSubnet2ID:
+        default: Private subnet 2 ID
+      PrivateSubnet2CIDR:
+        default: CIDR block for private subnet 2A
+      Node2PrivateIP:
+        default: Node 2 private IP address
+      PublicSubnet1ID:
+        default: Public subnet 1 ID
+      WindowsJumpboxInstanceType:
+        default: Optional Windows jump server instance type
+      LatestWindowsAmiId:
+        default: SSM parameter store query
+      QSS3BucketName:
+        default: Quick Start S3 bucket name
+      QSS3BucketRegion:
+        default: Quick Start S3 bucket Region
+      QSS3KeyPrefix:
+        default: Quick Start S3 key prefix
+Parameters:
+  RemoteAccessSecurityGroupID:
+    Description: ID of the bastion host security group to enable SSH connections (e.g. sg-1a23b456).
+    Type: AWS::EC2::SecurityGroup::Id
+    Default: sg-082d2bf72af79eb5b
+  RemoteAccessCIDR:
+    AllowedPattern: ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/([0-9]|[1-2][0-9]|3[0-2]))$
+    ConstraintDescription: CIDR block parameter must be in the form x.x.x.x/x.
+    Description: CIDR IP range that is permitted to access the SIOS Protection Suite server through the bastion host. We recommend that you set this value to a trusted IP range.
+    Type: String
+    Default: 0.0.0.0/0
+  SPSLInstanceNamePrefix:
+    Description: Name prefix for the SIOS Protection Suite servers.
+    Type: String
+    Default: SPSL
+  SPSLInstanceType:
+    Description: Amazon EC2 instance type for the SIOS Protection Suite servers.
+    Type: String
+    Default: t2.medium
+    AllowedValues:
+    - t2.medium
+    - t2.large
+    - t2.xlarge
+    - t2.2xlarge
+    - m3.medium
+    - m3.large
+    - m3.xlarge
+    - m3.2xlarge
+    - m4.large
+    - m4.xlarge
+    - m4.2xlarge
+    - m4.4xlarge
+    - m4.10xlarge
+    - m4.16xlarge
+    - m5.large
+    - m5.xlarge
+    - m5.2xlarge
+    - m5.4xlarge
+    - m5.12xlarge
+    - m5.24xlarge
+    - c3.large
+    - c3.xlarge
+    - c3.2xlarge
+    - c3.4xlarge
+    - c3.8xlarge
+    - c4.large
+    - c4.xlarge
+    - c4.2xlarge
+    - c4.4xlarge
+    - c4.8xlarge
+    - x1.16xlarge
+    - x1.32xlarge
+    - x1e.xlarge
+    - x1e.2xlarge
+    - x1e.4xlarge
+    - x1e.8xlarge
+    - x1e.16xlarge
+    - x1e.32xlarge
+    - r3.large
+    - r3.xlarge
+    - r3.2xlarge
+    - r3.4xlarge
+    - r3.8xlarge
+    - r4.large
+    - r4.xlarge
+    - r4.2xlarge
+    - r4.4xlarge
+    - r4.8xlarge
+    - r4.16xlarge
+    - p2.xlarge
+    - p2.8xlarge
+    - p2.16xlarge
+    - p3.2xlarge
+    - p3.8xlarge
+    - p3.16xlarge
+    - g2.2xlarge
+    - g2.8xlarge
+    - g3.4xlarge
+    - g3.8xlarge
+    - g3.16xlarge
+    - h1.2xlarge
+    - h1.4xlarge
+    - h1.8xlarge
+    - h1.16xlarge
+    - i2.xlarge
+    - i2.2xlarge
+    - i2.4xlarge
+    - i2.8xlarge
+    - i3.large
+    - i3.xlarge
+    - i3.2xlarge
+    - i3.4xlarge
+    - i3.8xlarge
+    - i3.16xlarge
+    - d2.xlarge
+    - d2.2xlarge
+    - d2.4xlarge
+    - d2.8xlarge
+    ConstraintDescription: Must be a valid EC2 instance type.
+  HomeDeleteOnTermination:
+    Description: Delete home directory volume when the SIOS Protection Suite server instance is terminated. Keep the default setting of `true` to delete the home directory when the instance is terminated. If `true`, you must back up your data before terminating your instance. Choose `false` to keep the home directory volume upon termination.
+    Type: String
+    Default: true
+    AllowedValues:
+    - true
+    - false
+    ConstraintDescription: Must be 'true' or 'false'.
+  HomeIops:
+    Description: IOPS for the home directory. This value is used only when the Home volume type parameter is set to `Provisioned IOPS`. Allowed range is 100–20000. The ratio of IOPS to volume size must be 50 or less. For example, if you set this parameter to 5000 IOPS, the home directory size must be at least 100 GiB.
+    Type: Number
+    Default: 1000
+    MinValue: 100
+    MaxValue: 20000
+    ConstraintDescription: Must be in the range 100–20000.
+  HomeSize:
+    Description: Storage size for the home directory, in GiB. Allowed range is 100–16384.
+    Type: Number
+    Default: 100
+    MinValue: 100
+    MaxValue: 16384
+    ConstraintDescription: Must be in the range 100–16384.
+  HomeVolumeType:
+    Description: Volume type for the home directory.
+    Type: String
+    Default: "General Purpose (SSD)"
+    AllowedValues:
+    - "General Purpose (SSD)"
+    - "Provisioned IOPS"
+    ConstraintDescription: Must be 'General Purpose (SSD)' or 'Provisioned IOPS'.
+  MirrorDeleteOnTermination:
+    Description: Delete the replicated volume when the SIOS Protection Suite server instance is terminated. Keep the default setting of `true` to delete the home directory when the instance is terminated. If `true`, you must back up your data before terminating your instance. Choose `false` to keep the replicated volume upon termination.
+    Type: String
+    Default: true
+    AllowedValues:
+    - true
+    - false
+    ConstraintDescription: Must be 'true' or 'false'.
+  MirrorIops:
+    Description: IOPS for the mirror volume. This value is used only when the Mirror volume type parameter is set to Provisioned IOPS. Allowed range is 100–20000. The ratio of IOPS to volume size must be 50 or less. For example, if you set this parameter to 5000 IOPS, the home directory size must be at least 100 GiB.
+    Type: Number
+    Default: 1000
+    MinValue: 100
+    MaxValue: 20000
+    ConstraintDescription: Must be in the range 100–20000.
+  MirrorSize:
+    Description: Storage size for the replicated volume, in GiB. Allowed range is 100–16384.
+    Type: Number
+    Default: 100
+    MinValue: 100
+    MaxValue: 16384
+    ConstraintDescription: Must be in the range 100–16384.
+  MirrorVolumeType:
+    Description: Volume type for the replicated data directory.
+    Type: String
+    Default: "General Purpose (SSD)"
+    AllowedValues:
+    - General Purpose (SSD)
+    - Provisioned IOPS
+    ConstraintDescription: Must be `General Purpose (SSD)` or `Provisioned IOPS`.
+  KeyPairName:
+    Description: Public/private key pair, which allows you to connect securely to
+      your instance after it launches. When you created an AWS account, this is the
+      key pair you created in your preferred Region.
+    Type: AWS::EC2::KeyPair::KeyName
+  NewRootPassword:
+    Description: Password for predefined administrator user to administer SIOS Protection Suite (8–16 characters).
+    Type: String
+    MinLength: 8
+    MaxLength: 16
+    NoEcho: true
+  VPCID:
+    Description: ID of your existing VPC (for example, `vpc-0343606e`).
+    Type: AWS::EC2::VPC::Id
+  PrivateSubnet1ID:
+    Description: ID of the private subnet in Availability Zone 1 in your existing VPC (for example, `subnet-a0246dcd`).
+    Type: AWS::EC2::Subnet::Id
+  PrivateSubnet1CIDR:
+    AllowedPattern: ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/([0-9]|[1-2][0-9]|3[0-2]))$
+    ConstraintDescription: CIDR block parameter must be in the form x.x.x.x/x
+    Description: CIDR IP range for the private subnet located in Availability Zone 1.
+    Default: 10.0.0.0/19
+    Type: String
+  Node1PrivateIP:
+    AllowedPattern: ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$
+    ConstraintDescription: IPv4 parameter must be in the form `x.x.x.x` and belong to private subnet 1A.
+    Description: Primary private IP for the cluster node, located in Availability Zone 1.
+    Default: 10.0.0.100
+    Type: String
+  PrivateSubnet2ID:
+    Description: ID of private subnet 2 in Availability Zone 2 for the SIOS Protection Suite instances (for example, `subnet-a0246dcd`).
+    Type: AWS::EC2::Subnet::Id
+  PrivateSubnet2CIDR:
+    AllowedPattern: ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/([0-9]|[1-2][0-9]|3[0-2]))$
+    ConstraintDescription: CIDR block parameter must be in the form x.x.x.x/x
+    Description: CIDR IP range for the private subnet, located in Availability Zone 2.
+    Default: 10.0.32.0/19
+    Type: String
+  Node2PrivateIP:
+    AllowedPattern: ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$
+    ConstraintDescription: IPv4 parameter must be in the form `x.x.x.x` and belong to Private Subnet 2A
+    Description: Primary private IP for the cluster node, located in Availability Zone 2.
+    Default: 10.0.32.100
+    Type: String
+  PublicSubnet1ID:
+    Description: ID of public subnet 1 in Availability Zone 1 for the Elastic Load Balancer (for example, `subnet-a0246dcd`).
+    Type: AWS::EC2::Subnet::Id
+  WindowsJumpboxInstanceType:
+    AllowedValues:
+    - None
+    - t2.nano
+    - t2.micro
+    - t2.small
+    - t2.medium
+    - t2.large
+    - m3.large
+    - m3.xlarge
+    - m3.2xlarge
+    - m4.large
+    - m4.xlarge
+    - m4.2xlarge
+    - m4.4xlarge
+    Default: None
+    Description: Amazon EC2 instance type for an optional Windows jump server.
+    Type: String
+  LatestWindowsAmiId:
+    Description: Latest AMI ID for Windows Server version
+    Type : AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>
+    Default: /aws/service/ami-windows-latest/Windows_Server-2019-English-Full-Base
+    AllowedValues:
+      - /aws/service/ami-windows-latest/Windows_Server-2019-English-Full-Base
+  QSS3BucketName:
+    AllowedPattern: '^[0-9a-zA-Z]+([0-9a-zA-Z-]*[0-9a-zA-Z])*$'
+    ConstraintDescription:
+      Quick Start bucket name can include numbers, lowercase
+      letters, uppercase letters, and hyphens (-). It cannot start or end with a 
+      hyphen (-).
+    Default: aws-ia
+    Description:
+      Name of the S3 bucket for your copy of the Quick Start assets. 
+      Keep the default name unless you are customizing the template. 
+      Changing the name updates code references to point to a new Quick 
+      Start location. This name can include numbers, lowercase letters, 
+      uppercase letters, and hyphens, but do not start or end with a hyphen (-). 
+      See https://aws-quickstart.github.io/option1.html.
+    Type: String
+  QSS3BucketRegion:
+    Default: 'us-east-1'
+    Description: 'AWS Region where the Quick Start S3 bucket (QSS3BucketName) is 
+    hosted. Keep the default Region unless you are customizing the template. 
+    Changing this Region updates code references to point to a new Quick Start location. When using your own bucket, specify the Region. 
+    See https://aws-quickstart.github.io/option1.html.'
+    Type: String
+  QSS3KeyPrefix:
+    AllowedPattern: '^[0-9a-zA-Z-/]*$'
+    ConstraintDescription:
+      Quick Start S3 key prefix can include numbers, lowercase letters,
+      uppercase letters, hyphens (-), and forward slashes (/). The prefix should
+      end with a forward slash (/).
+    Default: cfn-ps-sios-protection-suite/
+    Description:
+      S3 key prefix that is used to simulate a directory for your copy of the 
+      Quick Start assets. Keep the default prefix unless you are customizing 
+      the template. Changing this prefix updates code references to point to 
+      a new Quick Start location. This prefix can include numbers, lowercase 
+      letters, uppercase letters, hyphens (-), and forward slashes (/). End with 
+      a forward slash. See https://docs.aws.amazon.com/AmazonS3/latest/dev/UsingMetadata.html 
+      and https://aws-quickstart.github.io/option1.html.
+    Type: String
+Rules:
+  SubnetsInVPC:
+    Assertions:
+    - Assert:
+        Fn::EachMemberIn:
+        - Fn::ValueOfAll:
+          - AWS::EC2::Subnet::Id
+          - VpcId
+        - Fn::RefAll: AWS::EC2::VPC::Id
+      AssertDescription: All subnets must be in the VPC.
+Mappings:
+  AWSAMIRegionMap:
+    ap-northeast-2:
+      SPSLRHEL: ami-0702f9831a8afc6b6
+    ap-south-1:
+      SPSLRHEL: ami-085441ad7b3bfa29e
+    ap-southeast-1:
+      SPSLRHEL: ami-02d67eda42967b2c6
+    ap-southeast-2:
+      SPSLRHEL: ami-0a0415561fddd877d
+    ca-central-1:
+      SPSLRHEL: ami-0c33e2c0e7eba971c
+    eu-central-1:
+      SPSLRHEL: ami-0c2dfa2598531a1e2
+    eu-north-1:
+      SPSLRHEL: ami-054bfc21d64b467fc
+    eu-west-1:
+      SPSLRHEL: ami-08193987e940507f3
+    eu-west-2:
+      SPSLRHEL: ami-0e175456fa6bcb7ee
+    eu-west-3:
+      SPSLRHEL: ami-0c59411bf087a77bc
+    sa-east-1:
+      SPSLRHEL: ami-0b5e8f29776704600
+    us-east-1:
+      SPSLRHEL: ami-09c5de5e043a82f07
+    us-east-2:
+      SPSLRHEL: ami-0649e61b126948c04
+    us-west-1:
+      SPSLRHEL: ami-0f4c7897602b897bd
+    us-west-2:
+      SPSLRHEL: ami-041ceaa2e55a5deee
+Conditions:
+  UsingDefaultBucket: !Equals [!Ref QSS3BucketName, 'aws-ia']
+  HomeProvisionedIopsCondition: !Equals [!Ref HomeVolumeType, "Provisioned IOPS"]
+  MirrorProvisionedIopsCondition: !Equals [!Ref MirrorVolumeType, "Provisioned IOPS"]
+  NoWindowsInstance: !Equals [!Ref WindowsJumpboxInstanceType, "None"]
+  NeedWindowsInstance: !Not [Condition: NoWindowsInstance]
+Resources:
+  InstanceRole:
+    Type: AWS::IAM::Role
+    Metadata:
+      cfn-lint:
+        config:
+          ignore_checks:
+            - EIAMPolicyWildcardResource #Follows principle of least privilege
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - ec2.amazonaws.com
+                - ssm.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      Path: /
+      ManagedPolicyArns:
+        - !Sub "arn:${AWS::Partition}:iam::aws:policy/service-role/AmazonEC2RoleforSSM"
+      Policies:
+          - PolicyName: aws-quick-start-s3-policy
+            PolicyDocument:
+              Version: 2012-10-17
+              Statement:
+                - Action:
+                    - s3:GetObject
+                    - s3:ListBucket
+                  Resource:
+                    - !Sub ['arn:${AWS::Partition}:s3:::${S3Bucket}/${QSS3KeyPrefix}*', S3Bucket: !If [UsingDefaultBucket, !Sub '${QSS3BucketName}-${AWS::Region}', !Ref QSS3BucketName]]
+                    - !Sub ['arn:${AWS::Partition}:s3:::${S3Bucket}', S3Bucket: !If [UsingDefaultBucket, !Sub '${QSS3BucketName}-${AWS::Region}', !Ref QSS3BucketName]]
+                  Effect: Allow
+                - Action:
+                    - s3:GetObject
+                  Resource: 
+                    - !Sub 'arn:${AWS::Partition}:s3:::aws-ssm-${AWS::Region}/*'
+                    - !Sub 'arn:${AWS::Partition}:s3:::amazon-ssm-${AWS::Region}/*'
+                    - !Sub 'arn:${AWS::Partition}:s3:::amazon-ssm-packages-${AWS::Region}/*'
+                    - !Sub 'arn:${AWS::Partition}:s3:::${AWS::Region}-birdwatcher-prod/*'
+                    - !Sub 'arn:${AWS::Partition}:s3:::patch-baseline-snapshot-${AWS::Region}/*'
+                  Effect: Allow
+          - PolicyName: cloudformation-policy
+            PolicyDocument:
+              Version: '2012-10-17'
+              Statement:
+                - Effect: Allow
+                  Action:
+                    - cloudformation:SignalResource
+                  Resource: !Sub 'arn:${AWS::Partition}:cloudformation:${AWS::Region}:${AWS::AccountId}:stack/${AWS::StackName}/*'
+                - Effect: Allow
+                  Action:
+                    - cloudformation:DescribeStacks
+                  Resource: !Sub 'arn:${AWS::Partition}:cloudformation:${AWS::Region}:${AWS::AccountId}:stack/*'
+          - PolicyName: ssm-policy
+            PolicyDocument:
+              Version: '2012-10-17'
+              Statement:
+                - Effect: Allow
+                  Action: ssm:StartAutomationExecution
+                  Resource: !Sub arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:automation-definition/${SSMDocumentSPSLS4}:$DEFAULT
+                - Effect: Allow
+                  Action: ssm:SendCommand
+                  Resource:
+                    - !Sub arn:${AWS::Partition}:ssm:${AWS::Region}:*:document/AWS-RunRemoteScript
+                - Effect: Allow
+                  Action: ssm:SendCommand
+                  Resource: !Sub arn:${AWS::Partition}:ec2:${AWS::Region}:${AWS::AccountId}:instance/*
+                  Condition:
+                    StringEquals:
+                      'ssm:ResourceTag/aws:cloudformation:stack-name': !Ref AWS::StackName
+                - Effect: Allow
+                  Action:
+                  - ssm:DescribeInstanceInformation
+                  - ssm:ListCommandInvocations
+                  - ssm:ListCommands
+                  Resource: '*'
+          - PolicyName: SPSL-EC2
+            PolicyDocument:
+              Version: 2012-10-17
+              Statement:
+                - Effect: Allow
+                  Action:
+                  - ec2:DescribeInstances
+                  - ec2:ModifyInstanceAttribute
+                  - ec2:AttachVolume
+                  - ec2:CreateTags
+                  - ec2:CreateVolume
+                  - ec2:AssociateAddress
+                  - ec2:AttachNetworkInterface
+                  - ec2:CreateRoute
+                  - ec2:DeleteRoute
+                  - ec2:ReplaceRoute
+                  - ec2:RebootInstances
+                  - ec2:StartInstances
+                  - ec2:StopInstances
+                  - tag:GetResources
+                  Resource: '*'
+  SIOSPassRolePolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: MSSQL-SSM-PassRole
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Action:
+              - iam:PassRole
+            Resource: !Sub 'arn:${AWS::Partition}:iam::${AWS::AccountId}:role/${InstanceRole}'
+      Roles:
+        - !Ref 'InstanceRole'
+  InstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      Path: /
+      Roles:
+      - !Ref InstanceRole
+  RDPInboundRule:
+    Type: AWS::EC2::SecurityGroupIngress
+    Condition: NeedWindowsInstance
+    Properties:
+      IpProtocol: tcp
+      FromPort: 3389
+      ToPort: 3389
+      CidrIp: !Ref RemoteAccessCIDR
+      GroupId: !Ref RemoteAccessSecurityGroupID
+  JavaSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Security group allowing SSH and HTTP/HTTPS access
+      VpcId: !Ref VPCID
+      SecurityGroupIngress:
+      - IpProtocol: tcp
+        FromPort: 1024
+        ToPort: 65535
+        CidrIp: !Ref PrivateSubnet1CIDR
+      - IpProtocol: tcp
+        FromPort: 1024
+        ToPort: 65535
+        CidrIp: !Ref PrivateSubnet2CIDR
+  SPSLSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Security group allowing SSH and HTTP/HTTPS access
+      VpcId: !Ref VPCID
+      SecurityGroupIngress:
+      - IpProtocol: icmp
+        FromPort: -1
+        ToPort: -1
+        SourceSecurityGroupId: !Ref RemoteAccessSecurityGroupID
+      - IpProtocol: tcp
+        FromPort: 22
+        ToPort: 22
+        SourceSecurityGroupId: !Ref RemoteAccessSecurityGroupID
+      - IpProtocol: tcp
+        FromPort: 81
+        ToPort: 82
+        CidrIp: !Ref PrivateSubnet1CIDR
+      - IpProtocol: tcp
+        FromPort: 778
+        ToPort: 778
+        CidrIp: !Ref PrivateSubnet1CIDR
+      - IpProtocol: tcp
+        FromPort: 81
+        ToPort: 82
+        CidrIp: !Ref PrivateSubnet2CIDR
+      - IpProtocol: tcp
+        FromPort: 778
+        ToPort: 778
+        CidrIp: !Ref PrivateSubnet2CIDR
+      - IpProtocol: tcp
+        FromPort: 5801
+        ToPort: 5802
+        SourceSecurityGroupId: !Ref RemoteAccessSecurityGroupID
+      - IpProtocol: tcp
+        FromPort: 5901
+        ToPort: 5902
+        SourceSecurityGroupId: !Ref RemoteAccessSecurityGroupID
+      SecurityGroupEgress:
+      - IpProtocol: "-1"
+        CidrIp: 0.0.0.0/0
+        FromPort: 1
+        ToPort: 65535
+  Jumpbox:
+    Condition: NeedWindowsInstance
+    Type: AWS::EC2::Instance
+    Metadata:
+      AWS::CloudFormation::Authentication:
+        S3AccessCreds:
+          type: S3
+          roleName: !Ref InstanceRole
+          buckets: !Ref QSS3BucketName
+    Properties:
+      BlockDeviceMappings:
+      - DeviceName: /dev/sda1
+        Ebs:
+          VolumeType: gp2
+          DeleteOnTermination: true
+          VolumeSize: 50
+      IamInstanceProfile: !Ref InstanceProfile
+      EbsOptimized: false
+      ImageId: !Ref LatestWindowsAmiId
+      InstanceType: !Ref WindowsJumpboxInstanceType
+      KeyName: !Ref KeyPairName
+      NetworkInterfaces:
+      - AssociatePublicIpAddress: true
+        GroupSet:
+        - !Ref SPSLSecurityGroup
+        - !Ref RemoteAccessSecurityGroupID
+        - !Ref JavaSecurityGroup
+        DeviceIndex: "0"
+        DeleteOnTermination: true
+        SubnetId: !Ref PublicSubnet1ID
+      Tags:
+      - Key: Name
+        Value: !Sub |
+          ${SPSLInstanceNamePrefix}Jumpbox
+  SPSLNode1Interface:
+    Type: AWS::EC2::NetworkInterface
+    Properties:
+      GroupSet:
+      - !Ref SPSLSecurityGroup
+      - !Ref RemoteAccessSecurityGroupID
+      - !Ref JavaSecurityGroup
+      SubnetId: !Ref PrivateSubnet1ID
+      PrivateIpAddress: !Ref Node1PrivateIP
+      SourceDestCheck: false
+  SPSLNode2Interface:
+    Type: AWS::EC2::NetworkInterface
+    Properties:
+      GroupSet:
+      - !Ref SPSLSecurityGroup
+      - !Ref RemoteAccessSecurityGroupID
+      - !Ref JavaSecurityGroup
+      SubnetId: !Ref PrivateSubnet2ID
+      PrivateIpAddress: !Ref Node2PrivateIP
+      SourceDestCheck: false
+  SPSLNode1:
+    Type: AWS::EC2::Instance
+    Metadata:
+      cfn-lint:
+        config:
+          ignore_checks:
+            - E2504 #This is conditional and defined by the customer
+      AWS::CloudFormation::Authentication:
+        S3AccessCreds:
+          type: S3
+          roleName: !Ref InstanceRole
+          buckets: !Ref QSS3BucketName
+    Properties:
+      BlockDeviceMappings:
+      - DeviceName: /dev/sda1
+        Ebs:
+          VolumeType:
+            !If
+            - HomeProvisionedIopsCondition
+            - io1
+            - gp2
+          Iops:
+            !If
+            - HomeProvisionedIopsCondition
+            - !Ref HomeIops
+            - !Ref AWS::NoValue
+          DeleteOnTermination: !Ref HomeDeleteOnTermination
+          VolumeSize: !Ref HomeSize
+      - DeviceName: /dev/xvdca
+        Ebs:
+          VolumeType:
+            !If
+            - MirrorProvisionedIopsCondition
+            - io1
+            - gp2
+          Iops:
+            !If
+            - MirrorProvisionedIopsCondition
+            - !Ref MirrorIops
+            - !Ref AWS::NoValue
+          DeleteOnTermination: !Ref MirrorDeleteOnTermination
+          VolumeSize: !Ref MirrorSize
+      IamInstanceProfile: !Ref InstanceProfile
+      EbsOptimized: false
+      ImageId:
+        !FindInMap
+        - AWSAMIRegionMap
+        - !Ref AWS::Region
+        - SPSLRHEL
+      InstanceType: !Ref SPSLInstanceType
+      KeyName: !Ref KeyPairName
+      NetworkInterfaces:
+        - NetworkInterfaceId: !Ref SPSLNode1Interface
+          DeviceIndex: "0"
+      Tags:
+      - Key: Name
+        Value: !Join ['',[!Ref SPSLInstanceNamePrefix,'01']]
+      UserData:
+        Fn::Base64: !Sub |-
+          #!/bin/bash -ex
+          rm -f /opt/LifeKeeper/config/UNAME
+          rm -f /opt/LifeKeeper/config/networks
+          rm -f /opt/LifeKeeper/config/systems
+          hostname ${SPSLInstanceNamePrefix}01
+          echo -e "127.0.0.1\tlocalhost\t${SPSLInstanceNamePrefix}01\n" > /etc/hosts
+          echo ${SPSLInstanceNamePrefix}01 > /etc/hostname
+          echo ${SPSLInstanceNamePrefix}01 > /etc/HOSTNAME
+          hostnamectl set-hostname --static ${SPSLInstanceNamePrefix}01
+          echo '${NewRootPassword}' | passwd --stdin root
+          cd /tmp
+          wget http://stedolan.github.io/jq/download/linux64/jq -O /usr/local/bin/jq > /dev/null 2>&1
+          chmod 755 /usr/local/bin/jq
+          wget https://s3.amazonaws.com/ec2-downloads-windows/SSMAgent/latest/linux_amd64/amazon-ssm-agent.rpm > /dev/null 2>&1
+          rpm -ivh /tmp/amazon-ssm-agent.rpm > /dev/null 2>&1
+          echo '#!/usr/bin/sh' > /etc/init.d/ssm
+          echo "service amazon-ssm-agent start" >> /etc/init.d/ssm
+          chmod 755 /etc/init.d/ssm
+          while ! ps -ef | grep ssm | grep -v grep >/dev/null
+          do
+            systemctl enable amazon-ssm-agent
+            systemctl start amazon-ssm-agent
+            sleep 10
+          done
+  WaitForCluster:
+    Type: AWS::CloudFormation::WaitCondition
+    CreationPolicy:
+      ResourceSignal:
+        Timeout: PT30M
+        Count: 1
+    DependsOn: SPSLNode1
+    Properties:
+      Handle: !Ref WaitForClusterWaitHandle
+      Timeout: "3600"
+      Count: 1
+  WaitForClusterWaitHandle:
+    Type: AWS::CloudFormation::WaitConditionHandle
+  SPSLNode2:
+    Type: AWS::EC2::Instance
+    Metadata:
+      cfn-lint:
+        config:
+          ignore_checks:
+            - E2504 #This is conditional and defined by the customer
+      AWS::CloudFormation::Authentication:
+        S3AccessCreds:
+          type: S3
+          roleName: !Ref InstanceRole
+          buckets: !Ref QSS3BucketName
+    Properties:
+      BlockDeviceMappings:
+      - DeviceName: /dev/sda1
+        Ebs:
+          VolumeType:
+            !If
+            - HomeProvisionedIopsCondition
+            - io1
+            - gp2
+          Iops:
+            !If
+            - HomeProvisionedIopsCondition
+            - !Ref HomeIops
+            - !Ref AWS::NoValue
+          DeleteOnTermination: !Ref HomeDeleteOnTermination
+          VolumeSize: !Ref HomeSize
+      - DeviceName: /dev/xvdca
+        Ebs:
+          VolumeType:
+            !If
+            - MirrorProvisionedIopsCondition
+            - io1
+            - gp2
+          Iops:
+            !If
+            - MirrorProvisionedIopsCondition
+            - !Ref MirrorIops
+            - !Ref AWS::NoValue
+          DeleteOnTermination: !Ref MirrorDeleteOnTermination
+          VolumeSize: !Ref MirrorSize
+      IamInstanceProfile: !Ref InstanceProfile
+      EbsOptimized: false
+      ImageId:
+        !FindInMap
+        - AWSAMIRegionMap
+        - !Ref AWS::Region
+        - SPSLRHEL
+      InstanceType: !Ref SPSLInstanceType
+      KeyName: !Ref KeyPairName
+      NetworkInterfaces:
+        - NetworkInterfaceId: !Ref SPSLNode2Interface
+          DeviceIndex: "0"
+      Tags:
+      - Key: Name
+        Value: !Join ['',[!Ref SPSLInstanceNamePrefix,'02']]
+      UserData:
+        Fn::Base64: !Sub |
+          #!/bin/bash -ex
+          rm -f /opt/LifeKeeper/config/UNAME
+          rm -f /opt/LifeKeeper/config/networks
+          rm -f /opt/LifeKeeper/config/systems
+          hostname ${SPSLInstanceNamePrefix}02
+          echo -e "127.0.0.1\tlocalhost\t${SPSLInstanceNamePrefix}02\n" > /etc/hosts
+          echo ${SPSLInstanceNamePrefix}02 > /etc/hostname
+          echo ${SPSLInstanceNamePrefix}02 > /etc/HOSTNAME
+          hostnamectl set-hostname --static ${SPSLInstanceNamePrefix}02
+          echo '${NewRootPassword}' | passwd --stdin root
+          cd /tmp
+          wget http://stedolan.github.io/jq/download/linux64/jq -O /usr/local/bin/jq > /dev/null 2>&1
+          chmod 755 /usr/local/bin/jq
+          wget https://s3.amazonaws.com/ec2-downloads-windows/SSMAgent/latest/linux_amd64/amazon-ssm-agent.rpm > /dev/null 2>&1
+          rpm -ivh /tmp/amazon-ssm-agent.rpm > /dev/null 2>&1
+          echo '#!/usr/bin/sh' > /etc/init.d/ssm
+          echo "service amazon-ssm-agent start" >> /etc/init.d/ssm
+          chmod 755 /etc/init.d/ssm
+          while ! ps -ef | grep ssm | grep -v grep >/dev/null
+          do
+            systemctl enable amazon-ssm-agent
+            systemctl start amazon-ssm-agent
+            sleep 10
+          done
+          sleep 300
+          aws ssm start-automation-execution \
+            --document-name ${SSMDocumentSPSLS4} \
+            --region ${AWS::Region} \
+            --parameters "SIOSAMIType=PAYG, \
+              SPSLNode1Hostname=${SPSLInstanceNamePrefix}01, \
+              SPSLNode2Hostname=${SPSLInstanceNamePrefix}02, \
+              Node1PrivateIP=${Node1PrivateIP}, \
+              Node2PrivateIP=${Node2PrivateIP}, \
+              QSS3BucketName=${QSS3BucketName}, \
+              QSS3BucketRegion=${QSS3BucketRegion}, \
+              QSS3KeyPrefix=${QSS3KeyPrefix}, \
+              StackName=${AWS::StackName}, \
+              AutomationAssumeRole=arn:aws:iam::${AWS::AccountId}:role/${InstanceRole}" >> /var/log/cloud-init.log
+  QuickStartLogs:
+    Type: AWS::Logs::LogGroup
+    Properties: 
+      LogGroupName: !Sub '/aws/Quick_Start/${AWS::StackName}'
+      RetentionInDays: 30
+  SSMDocumentSPSLS4:
+    Type: AWS::SSM::Document
+    Properties:
+      DocumentType: Automation
+      Content:
+        schemaVersion: "0.3"
+        description: Deploy SIOS SPSL S4HANA with SSM Automation
+        assumeRole: "{{AutomationAssumeRole}}"
+        parameters:
+          SIOSAMIType:
+            description: SIOS Protection Suite AMI license model to use for cluster nodes.
+            type: String
+            default: PAYG
+          SPSLNode1Hostname:
+            description: Hostname for the primary SPSL node.
+            type: String
+            default: SPSL01
+          SPSLNode2Hostname:
+            description: Hostname for the primary SPSL node.
+            type: String
+            default: SPSL02
+          Node1PrivateIP:
+            description: Primary private IP for the cluster node located in Availability Zone 1.
+            type: String
+            default: 10.0.0.100
+          Node2PrivateIP:
+            description: Primary private IP for the cluster node located in Availability Zone 2.
+            type: String
+            default: 10.0.32.100
+          QSS3BucketName:
+            description: S3 bucket where the Quick Start templates and scripts are installed.
+              Use this parameter to specify the S3 bucket name you’ve created for your copy
+              of Quick Start assets if you decide to customize or extend the Quick Start
+              for your own use. The bucket name can include numbers lowercase letters uppercase
+              letters and hyphens but should not start or end with a hyphen.
+            type: String
+            default: aws-quickstart
+          QSS3BucketRegion:
+            default: us-east-1
+            description: AWS Region where the Quick Start S3 bucket (QSS3BucketName) is hosted. When using your own bucket, you must specify this value.
+            type: String
+          QSS3KeyPrefix:
+            description: S3 key name prefix used to simulate a folder for your copy of
+              Quick Start assets if you decide to customize or extend the Quick Start for
+              your own use. This prefix can include numbers, lowercase letters, uppercase
+              letters, hyphens and forward slashes, and should end with a forward slash.
+            type: String
+            default: quickstart-sios-protection-suite/
+          StackName:
+            description: Stack Name Input for cfn resource signal
+            type: String
+            default: ''
+          AutomationAssumeRole:
+            description: (Optional) ARN of the role that allows Automation to perform the actions on your behalf.
+            type: String
+            default: ''
+        mainSteps:
+        - name: SPSLNodeInstanceIds
+          action: aws:executeAwsApi
+          onFailure: step:signalfailure
+          #nextStep:
+          inputs:
+            Service: ec2
+            Api: DescribeInstances
+            Filters:  
+            - Name: tag:Name
+              Values: [ "{{SPSLNode1Hostname}}","{{SPSLNode2Hostname}}" ]
+            - Name: instance-state-name
+              Values: [ "running" ]
+          outputs:
+          - Name: InstanceIds
+            Selector: "$.Reservations..Instances..InstanceId"
+            Type: "StringList"
+        - name: "SPSLNode1InstanceId"
+          action: "aws:executeAwsApi"
+          onFailure: "step:signalfailure"
+          #nextStep:
+          inputs:
+            Service: ec2
+            Api: DescribeInstances
+            Filters:  
+            - Name: "tag:Name"
+              Values: [ "{{SPSLNode1Hostname}}" ]
+            - Name: "instance-state-name"
+              Values: [ "running" ]
+          outputs:
+          - Name: InstanceId
+            Selector: "$.Reservations[0].Instances[0].InstanceId"
+            Type: "String"
+        - name: "SPSLNode2InstanceId"
+          action: "aws:executeAwsApi"
+          onFailure: "step:signalfailure"
+          #nextStep: 
+          inputs:
+            Service: ec2
+            Api: DescribeInstances
+            Filters:  
+            - Name: "tag:Name"
+              Values: [ "{{SPSLNode2Hostname}}" ]
+            - Name: "instance-state-name"
+              Values: [ "running" ]
+          outputs:
+          - Name: InstanceId
+            Selector: "$.Reservations[0].Instances[0].InstanceId"
+            Type: "String"
+        - name: "configureHosts"
+          action: "aws:runCommand"
+          onFailure: "step:signalfailure"
+          #nextStep:
+          inputs:
+            DocumentName: "AWS-RunRemoteScript"
+            InstanceIds:
+              - "{{SPSLNodeInstanceIds.InstanceIds}}"
+            CloudWatchOutputConfig:
+              CloudWatchOutputEnabled: "true"
+              CloudWatchLogGroupName: !Ref 'QuickStartLogs'
+            Parameters:
+              sourceType: "S3"
+              sourceInfo: '{"path": "https://{{QSS3BucketName}}.s3.{{QSS3BucketRegion}}.amazonaws.com/{{QSS3KeyPrefix}}scripts/init-host.sh"}'
+              commandLine: "./init-host.sh {{SPSLNode1Hostname}} {{SPSLNode2Hostname}} {{Node1PrivateIP}} {{Node2PrivateIP}}"
+        - name: "downloadLKLicense"
+          action: "aws:runCommand"
+          onFailure: "step:createCommpathsSPSL01"
+          #nextStep:
+          inputs:
+            DocumentName: "AWS-RunRemoteScript"
+            InstanceIds:
+              - "{{SPSLNodeInstanceIds.InstanceIds}}"
+            CloudWatchOutputConfig:
+              CloudWatchOutputEnabled: "true"
+              CloudWatchLogGroupName: !Ref 'QuickStartLogs'
+            Parameters:
+              sourceType: "S3"
+              sourceInfo: '{"path": "https://{{QSS3BucketName}}.s3.{{QSS3BucketRegion}}.amazonaws.com/{{QSS3KeyPrefix}}scripts/InstallLicAndStartLK.pl"}'
+              commandLine: "./InstallLicAndStartLK.pl -s {{StackName}} -r {{global:REGION}} >> /var/log/cloud-init.log"
+        - name: "createCommpathsSPSL01"
+          action: "aws:runCommand"
+          onFailure: "step:signalfailure"
+          #nextStep:
+          inputs:
+            DocumentName: "AWS-RunRemoteScript"
+            InstanceIds:
+              - "{{SPSLNode1InstanceId.InstanceId}}"
+            CloudWatchOutputConfig:
+              CloudWatchOutputEnabled: "true"
+              CloudWatchLogGroupName: !Ref 'QuickStartLogs'
+            Parameters:
+              sourceType: "S3"
+              sourceInfo: '{"path": "https://{{QSS3BucketName}}.s3.{{QSS3BucketRegion}}.amazonaws.com/{{QSS3KeyPrefix}}scripts/CreateCommPath.pl"}'
+              commandLine: "sleep 60; ./CreateCommPath.pl -l {{Node1PrivateIP}} -r {{Node2PrivateIP}} -s {{SPSLNode2Hostname}} >> /var/log/cloud-init.log"
+        - name: "createCommpathsSPSL02"
+          action: "aws:runCommand"
+          onFailure: "step:signalfailure"
+          #nextStep:
+          inputs:
+            DocumentName: "AWS-RunRemoteScript"
+            InstanceIds:
+              - "{{SPSLNode2InstanceId.InstanceId}}"
+            CloudWatchOutputConfig:
+              CloudWatchOutputEnabled: "true"
+              CloudWatchLogGroupName: !Ref 'QuickStartLogs'
+            Parameters:
+              sourceType: "S3"
+              sourceInfo: '{"path": "https://{{QSS3BucketName}}.s3.{{QSS3BucketRegion}}.amazonaws.com/{{QSS3KeyPrefix}}scripts/CreateCommPath.pl"}'
+              commandLine: "./CreateCommPath.pl -l {{Node2PrivateIP}} -r {{Node1PrivateIP}} -s {{SPSLNode1Hostname}} >> /var/log/cloud-init.log"
+        - name: "CreateMirrors"
+          action: "aws:runCommand"
+          onFailure: "step:signalfailure"
+          #nextStep:
+          inputs:
+            DocumentName: "AWS-RunRemoteScript"
+            InstanceIds:
+              - "{{SPSLNode1InstanceId.InstanceId}}"
+            CloudWatchOutputConfig:
+              CloudWatchOutputEnabled: "true"
+              CloudWatchLogGroupName: !Ref 'QuickStartLogs'
+            Parameters:
+              sourceType: "S3"
+              sourceInfo: '{"path": "https://{{QSS3BucketName}}.s3.{{QSS3BucketRegion}}.amazonaws.com/{{QSS3KeyPrefix}}scripts/CreateMirrorHierarchy.pl"}'
+              commandLine:
+                - |
+                   while ! ./CreateMirrorHierarchy.pl -l /dev/xvdca -r /dev/xvdca >> /var/log/cloud-init.log; do sleep 10; done
+        # If all steps complete successfully signals CFN of Success
+        - name: "signalsuccess"
+          action: "aws:executeAwsApi"
+          isEnd: True
+          inputs:
+            Service: cloudformation
+            Api: SignalResource
+            LogicalResourceId: "WaitForCluster"
+            StackName: "{{StackName}}"
+            Status: SUCCESS
+            UniqueId: "{{SPSLNode2InstanceId.InstanceId}}"
+        # If any steps fails signals CFN of Failure
+        - name: "signalfailure"
+          action: "aws:executeAwsApi"
+          inputs:
+            Service: cloudformation
+            Api: SignalResource
+            LogicalResourceId: "WaitForCluster"
+            StackName: "{{StackName}}"
+            Status: FAILURE
+            UniqueId: "{{SPSLNode2InstanceId.InstanceId}}"
+Outputs:
+  Postdeployment:
+    Description: See the deployment guide for post-deployment steps.
+    Value: https://aws.amazon.com/quickstart/?quickstart-all.sort-by=item.additionalFields.sortDate&quickstart-all.sort-order=desc&awsm.page-quickstart-all=5
