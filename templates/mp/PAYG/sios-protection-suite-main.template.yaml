@@ -14,6 +14,7 @@ Metadata:
   cfn-lint:
     config:
       ignore_checks:
+        - W7001
         - W9006
         - W9901
   AWS::CloudFormation::Interface:
@@ -405,6 +406,38 @@ Parameters:
     Type: String
 Conditions:
   UsingDefaultBucket: !Equals [!Ref QSS3BucketName, 'aws-ia']
+Mappings:
+  AWSAMIRegionMap:
+    ap-northeast-2:
+      SPSLRHEL: ami-0702f9831a8afc6b6
+    ap-south-1:
+      SPSLRHEL: ami-085441ad7b3bfa29e
+    ap-southeast-1:
+      SPSLRHEL: ami-02d67eda42967b2c6
+    ap-southeast-2:
+      SPSLRHEL: ami-0a0415561fddd877d
+    ca-central-1:
+      SPSLRHEL: ami-0c33e2c0e7eba971c
+    eu-central-1:
+      SPSLRHEL: ami-0c2dfa2598531a1e2
+    eu-north-1:
+      SPSLRHEL: ami-054bfc21d64b467fc
+    eu-west-1:
+      SPSLRHEL: ami-08193987e940507f3
+    eu-west-2:
+      SPSLRHEL: ami-0e175456fa6bcb7ee
+    eu-west-3:
+      SPSLRHEL: ami-0c59411bf087a77bc
+    sa-east-1:
+      SPSLRHEL: ami-0b5e8f29776704600
+    us-east-1:
+      SPSLRHEL: ami-09c5de5e043a82f07
+    us-east-2:
+      SPSLRHEL: ami-0649e61b126948c04
+    us-west-1:
+      SPSLRHEL: ami-0f4c7897602b897bd
+    us-west-2:
+      SPSLRHEL: ami-041ceaa2e55a5deee
 Resources:
   VPCStack:
     Type: AWS::CloudFormation::Stack
